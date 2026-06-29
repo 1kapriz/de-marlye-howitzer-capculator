@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Artillery Calculator</title><style>
-body{font-family:Arial,sans-serif;margin:1px;background-image:url('https://cdn.discordapp.com/attachments/1520630784766115870/1520996719662203010/bkacgorujnd.png?ex=6a433a14&is=6a41e894&hm=63e862155d9ad21f0533ccc5e844a6f3a5dbfccb1c2f89e9484fd9d68065eb21&');background-color:#121214;background-attachment:fixed;color:#e0e0e6}
+body{font-family:Arial,sans-serif;margin:20px;background-image:url('https://cdn.discordapp.com/attachments/1520630784766115870/1520996719662203010/bkacgorujnd.png?ex=6a433a14&is=6a41e894&hm=63e862155d9ad21f0533ccc5e844a6f3a5dbfccb1c2f89e9484fd9d68065eb21&');background-color:#121214;background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#e0e0e6}
 .container{display:flex;gap:20px;max-width:1400px;margin:0 auto;flex-wrap:wrap}
 .panel{background:rgba(30,30,36,0.85);padding:20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.4);box-sizing:border-box;backdrop-filter:blur(5px)}
 .instructions-column{flex:1;min-width:280px;border-top:4px solid #3792cb}
@@ -38,8 +38,8 @@ drawNativeGraph(c,v0,qDeg,g,l)}
 function clearCanvas(){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(cx)cx.clearRect(0,0,cv.width,cv.height)}
 function drawNativeGraph(dist,v0,angDeg,g,l){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(!cx)return;cx.clearRect(0,0,cv.width,cv.height);
 const pL=60,pR=30,pT=30,pB=40,pW=cv.width-pL-pR,pH=cv.height-pT-pB,angRad=angDeg*(Math.PI/180),pts=[],seg=100;let maxY=50,minY=0;
-for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;pts.push({x,y});if(y>maxY)maxY=y;if(y<minY)minY=y}
-maxY*=1.15;minY=minY<0?minY*1.15:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
+for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;pts.push({x,y});if(y>maxY)maxY=y;if(y*1.15<minY)minY=y*1.15}
+maxY*=1.15;minY=minY<0?minY:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
 for(let i=0;i<=4;i++){const f=i/4,xVal=f*dist,cX=pL+f*pW;cx.beginPath();cx.moveTo(cX,pT);cx.lineTo(cX,pT+pH);cx.stroke();cx.textAlign='center';cx.fillText(Math.round(xVal),cX,pT+pH+18)}
 for(let i=0;i<=4;i++){const f=i/4,yVal=minY+f*(maxY-minY),cY=pT+pH-f*pH;cx.beginPath();cx.moveTo(pL,cY);cx.lineTo(pL+pW,cY);cx.stroke();cx.textAlign='right';cx.fillText(Math.round(yVal),pL-10,cY+4)}
 if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
