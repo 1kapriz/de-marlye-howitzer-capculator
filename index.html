@@ -27,14 +27,15 @@ canvas{display:block;width:100%;max-width:600px;height:380px;background:#1a1a1f;
 function calculateArtillery(){
 const h=parseFloat(document.getElementById('inputH').value),a=parseFloat(document.getElementById('inputA').value),t=parseFloat(document.getElementById('inputT').value),b=parseFloat(document.getElementById('inputB').value),l=parseFloat(document.getElementById('inputL').value);
 if(isNaN(h)||isNaN(a)||isNaN(t)||isNaN(b)||isNaN(l)){alert("Please fill fields.");return}
-const g=178.36,v0=1250,pRad=Math.abs(h-t)*(Math.PI/180),c=Math.sqrt(a*a+b*b-2*a*b*Math.cos(pRad)),asinTerm=(c*g)/(v0*v0);
+const g=178.36,v0=1250,hRad=h*(Math.PI/180),tRad=t*(Math.PI/180);
+const ax=a*Math.sin(hRad),ay=a*Math.cos(hRad),bx=b*Math.sin(tRad),by=b*Math.cos(tRad);
+const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy),asinTerm=(c*g)/(v0*v0);
 if(asinTerm>1||asinTerm<-1){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
 const qDeg=(0.5*Math.asin(asinTerm))*(180/Math.PI),clicks=Math.round(qDeg*2);
 if(clicks>50||clicks<-60){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
 const angRad=qDeg*(Math.PI/180);let maxH=l;for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;if(y>maxH)maxH=y}
 const roundMaxH=Math.round(maxH*2)/2;
-let azi=0;if(c>0.1&&b>0.1){const revH=(h+180)%360;let sinA=(b*Math.sin(pRad))/c;if(sinA>1)sinA=1;if(sinA<-1)sinA=-1;let intA=Math.asin(sinA)*(180/Math.PI);
-const cosCheck=Math.pow(a,2)+Math.pow(c,2)-Math.pow(b,2);if(cosCheck<0)intA=180-intA;let diff=((t-h)%360+540)%360-180;if(diff>0)azi=(revH+intA)%360;else azi=(revH-intA+360)%360}else{azi=(h+180)%360}
+let azi=(Math.atan2(dx,dy)*(180/Math.PI)+360)%360;
 document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Firing Azimuth:</strong> <span style="color:#fff">${azi.toFixed(2)}°</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
 drawNativeGraph(c,v0,qDeg,g,l)}
 function clearCanvas(){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(cx)cx.clearRect(0,0,cv.width,cv.height)}
