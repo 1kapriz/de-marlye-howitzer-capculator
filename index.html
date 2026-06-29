@@ -6,140 +6,72 @@
     <title>Artillery Spotter Calculator</title>
     <script src="https://jsdelivr.net"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        .container {
-            display: flex;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .sidebar {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 320px;
-        }
-        .main-content {
-            flex: 2;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h2 {
-            margin-top: 0;
-            color: #222;
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .input-hint {
-            display: block;
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .results {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            border-left: 5px solid #28a745;
-        }
-        .important-metric {
-            font-size: 18px;
-            color: #d9534f;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #ccc;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
+        .container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .instructions-column { flex: 1; min-width: 280px; border-top: 4px solid #007bff; }
+        .inputs-column { flex: 1.2; min-width: 320px; border-top: 4px solid #6c757d; }
+        .graph-column { flex: 2; min-width: 400px; border-top: 4px solid #28a745; }
+        h2 { margin-top: 0; color: #222; font-size: 20px; }
+        p { font-size: 14px; line-height: 1.5; color: #444; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .input-hint { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+        input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .results { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; }
+        .important-metric { font-size: 20px; color: #d9534f; margin-top: 12px; padding-top: 12px; border-top: 2px dashed #bbb; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <!-- Left Sidebar: User Input Variables -->
-        <div class="sidebar">
+        <!-- COLUMN 1: Instructions -->
+        <div class="panel instructions-column">
+            <h2>Instructions</h2>
+            <p>The intention is to have a spotter at a set location on the field. They should measure the distance it is from them to the artillery with a rangefind tool/binocs, then take the bearing of the artillery direction, and plug it in. Then, they should take the same measurements but to the desired target. If there is any change in height, try to estimate it but it won't affect anything that much. If you are at the howitzer and measuring distances from it, set Bearing and Distance to target both at 0. Set the bearing to Artillery at 180, and the Distance from Artillery as the distance to your target.</p>
+        </div>
+
+        <!-- COLUMN 2: Inputs & Calculations -->
+        <div class="panel inputs-column">
             <h2>Spotter calculations</h2>
-            
             <div class="input-group">
                 <label for="inputH">Bearing to Artillery (h)</label>
                 <span class="input-hint">Range: 0° to 360°</span>
-                <input type="number" id="inputH" placeholder="0 - 360" min="0" max="360" step="any" value="180">
+                <input type="number" id="inputH" min="0" max="360" step="any" value="180">
             </div>
-            
             <div class="input-group">
                 <label for="inputA">Distance from Artillery (a)</label>
                 <span class="input-hint">Range: 0 to 7000</span>
-                <input type="number" id="inputA" placeholder="0 - 7000" min="0" max="7000" step="any" value="930">
+                <input type="number" id="inputA" min="0" max="7000" step="any" value="930">
             </div>
-            
             <div class="input-group">
                 <label for="inputT">Bearing to Target (t)</label>
                 <span class="input-hint">Range: 0° to 360°</span>
-                <input type="number" id="inputT" placeholder="0 - 360" min="0" max="360" step="any" value="0">
+                <input type="number" id="inputT" min="0" max="360" step="any" value="0">
             </div>
-            
             <div class="input-group">
                 <label for="inputB">Distance from Target (b)</label>
                 <span class="input-hint">Range: 0 to 7000</span>
-                <input type="number" id="inputB" placeholder="0 - 7000" min="0" max="7000" step="any" value="0">
+                <input type="number" id="inputB" min="0" max="7000" step="any" value="0">
             </div>
-
             <div class="input-group">
                 <label for="inputL">Height difference (l)</label>
                 <span class="input-hint">Height difference between target (-150 to 150)</span>
-                <input type="number" id="inputL" placeholder="-150 to 150" min="-150" max="150" step="any" value="0">
+                <input type="number" id="inputL" min="-150" max="150" step="any" value="0">
             </div>
-            
             <button onclick="calculateArtillery()">Calculate & Graph</button>
-
-            <!-- Results Panel -->
             <div class="results" id="outputArea">
-                <strong>Enter values and click calculate.</strong>
+                <strong>Click Calculate to view firing solutions.</strong>
             </div>
         </div>
 
-        <!-- Right Content Window: The Graph Canvas -->
-        <div class="main-content">
+        <!-- COLUMN 3: Chart Display -->
+        <div class="panel graph-column">
             <h2>Trajectory Visualizer</h2>
-            <canvas id="trajectoryChart" width="400" height="250"></canvas>
+            <div style="height: 300px; position: relative;">
+                <canvas id="trajectoryChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -147,94 +79,73 @@
         let chartInstance = null;
 
         function calculateArtillery() {
-            // Read Inputs
             const h = parseFloat(document.getElementById('inputH').value);
             const a = parseFloat(document.getElementById('inputA').value);
             const t = parseFloat(document.getElementById('inputT').value);
             const b = parseFloat(document.getElementById('inputB').value);
             const l = parseFloat(document.getElementById('inputL').value);
 
-            // Validation
             if (isNaN(h) || isNaN(a) || isNaN(t) || isNaN(b) || isNaN(l)) {
-                alert("Please fill out all calculation fields.");
+                alert("Please fill out all fields.");
                 return;
             }
 
-            // Constants from your setup
             const g = 178.36;
             const v0 = 1250;
 
-            // 1. Calculate intermediate angle p = |h - t|
-            const pDeg = Math.abs(h - t);
-            const pRad = pDeg * (Math.PI / 180);
+            // Law of Cosines calculation
+            const pRad = Math.abs(h - t) * (Math.PI / 180);
+            const c = Math.sqrt(Math.pow(a,2) + Math.pow(b,2) - (2 * a * b * Math.cos(pRad)));
 
-            // 2. Law of Cosines: c = sqrt(a² + b² - 2ab * cos(p))
-            const c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) - (2 * a * b * Math.cos(pRad)));
-
-            // 3. Firing Angle: q = 0.5 * asin((c * g) / v0²)
+            // Firing angle verification calculation
             const asinTerm = (c * g) / Math.pow(v0, 2);
-            
             if (asinTerm > 1 || asinTerm < -1) {
-                document.getElementById('outputArea').innerHTML = `<p style="color:red;"><strong>Error:</strong> Target out of physical range (calculated distance: ${c.toFixed(1)}).</p>`;
+                document.getElementById('outputArea').innerHTML = `<p style="color:#d9534f; font-weight:bold;">Error: Out of physical range.</p>`;
                 return;
             }
 
-            const qRad = 0.5 * Math.asin(asinTerm);
-            const qDeg = qRad * (180 / Math.PI); // Convert back to system degrees
-
-            // 4. Clicks value: round(q * 2)
+            const qDeg = (0.5 * Math.asin(asinTerm)) * (180 / Math.PI);
             const clicks = Math.round(qDeg * 2);
 
-            // Update UI Sidebar Panel
             document.getElementById('outputArea').innerHTML = `
                 <p><strong>Distance to Target (c):</strong> ${c.toFixed(2)}</p>
                 <p><strong>Firing Angle (q):</strong> ${qDeg.toFixed(4)}°</p>
-                <div class="important-metric">
-                    <strong>Clicks from 0 degrees:</strong> ${clicks}
-                </div>
+                <div class="important-metric">Clicks from 0 degrees: ${clicks}</div>
             `;
 
-            // Draw Curve
             displayGraph(c, v0, qDeg, g, l);
         }
 
         function displayGraph(distance, v0, angleDeg, g, l) {
-            const angleRad = angleDeg * (Math.PI / 180); 
+            const angleRad = angleDeg * (Math.PI / 180);
             const points = [];
-            
-            // Map out trajectory using your formula: y = x*tan(q) - (g*x²)/(2*v0²*cos(q)²) + l
             const step = distance / 50;
+
             for (let x = 0; x <= distance; x += step) {
-                const term1 = x * Math.tan(angleRad);
-                const term2 = (g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2));
-                const y = term1 - term2 + l;
-                
+                const y = (x * Math.tan(angleRad)) - ((g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2))) + l;
                 points.push({ x: parseFloat(x.toFixed(1)), y: parseFloat(y.toFixed(1)) });
             }
-            
-            // Ensure the final coordinate accurately drops to destination point
             points.push({ x: parseFloat(distance.toFixed(1)), y: l });
 
             const ctx = document.getElementById('trajectoryChart').getContext('2d');
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+            if (chartInstance) { chartInstance.destroy(); }
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     datasets: [{
-                        label: 'Artillery Trajectory',
+                        label: 'Artillery Trajectory Arc',
                         data: points,
-                        borderColor: '#5cb85c',
+                        borderColor: '#28a745',
                         borderWidth: 3,
                         fill: false,
-                        pointRadius: 1,
-                        tension: 0.2
+                        pointRadius: 0,
+                        tension: 0.1
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Horizontal Distance' } },
                         y: { title: { display: true, text: 'Height Profile' } }
@@ -242,8 +153,6 @@
                 }
             });
         }
-
-        // Run calculation once on page load to verify baseline setup matches image (930 distance, 6 clicks)
         window.onload = calculateArtillery;
     </script>
 </body>
