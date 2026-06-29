@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artillery Spotter Calculator</title>
-    <!-- Chart.js library for drawing the Desmos-style arc graph -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body {
@@ -25,7 +24,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 300px;
+            min-width: 320px;
         }
         .main-content {
             flex: 2;
@@ -34,7 +33,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        h1, h2 {
+        h2 {
             margin-top: 0;
             color: #222;
         }
@@ -71,6 +70,7 @@
             font-size: 16px;
             cursor: pointer;
             font-weight: bold;
+            margin-top: 10px;
         }
         button:hover {
             background-color: #0056b3;
@@ -80,49 +80,63 @@
             padding: 15px;
             background-color: #e9ecef;
             border-radius: 4px;
+            border-left: 5px solid #28a745;
+        }
+        .important-metric {
+            font-size: 18px;
+            color: #d9534f;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Left Sidebar: Inputs -->
+        <!-- Left Sidebar: User Input Variables -->
         <div class="sidebar">
             <h2>Spotter calculations</h2>
             
             <div class="input-group">
-                <label for="bearingArtillery">Bearing to Artillery (°)</label>
-                <span class="input-hint">Allowed range: 0° to 360°</span>
-                <input type="number" id="bearingArtillery" placeholder="0 - 360" min="0" max="360" step="any">
+                <label for="inputH">Bearing to Artillery (h)</label>
+                <span class="input-hint">Range: 0° to 360°</span>
+                <input type="number" id="inputH" placeholder="0 - 360" min="0" max="360" step="any" value="180">
             </div>
             
             <div class="input-group">
-                <label for="distanceArtillery">Distance from Artillery</label>
-                <span class="input-hint">Allowed range: 0 to 7000 (Max distance)</span>
-                <input type="number" id="distanceArtillery" placeholder="0 - 7000" min="0" max="7000" step="any">
+                <label for="inputA">Distance from Artillery (a)</label>
+                <span class="input-hint">Range: 0 to 7000</span>
+                <input type="number" id="inputA" placeholder="0 - 7000" min="0" max="7000" step="any" value="930">
             </div>
             
             <div class="input-group">
-                <label for="bearingTarget">Bearing to Target (°)</label>
-                <span class="input-hint">Allowed range: 0° to 360°</span>
-                <input type="number" id="bearingTarget" placeholder="0 - 360" min="0" max="360" step="any">
+                <label for="inputT">Bearing to Target (t)</label>
+                <span class="input-hint">Range: 0° to 360°</span>
+                <input type="number" id="inputT" placeholder="0 - 360" min="0" max="360" step="any" value="0">
             </div>
             
             <div class="input-group">
-                <label for="distanceTarget">Distance from Target</label>
-                <span class="input-hint">Allowed range: 0 to 7000 (Max distance)</span>
-                <input type="number" id="distanceTarget" placeholder="0 - 7000" min="0" max="7000" step="any">
+                <label for="inputB">Distance from Target (b)</label>
+                <span class="input-hint">Range: 0 to 7000</span>
+                <input type="number" id="inputB" placeholder="0 - 7000" min="0" max="7000" step="any" value="0">
             </div>
-            
-            <button onclick="calculateTrajectory()">Calculate & Graph</button>
 
-            <!-- Results display area -->
+            <div class="input-group">
+                <label for="inputL">Height difference (l)</label>
+                <span class="input-hint">Height difference between target (-150 to 150)</span>
+                <input type="number" id="inputL" placeholder="-150 to 150" min="-150" max="150" step="any" value="0">
+            </div>
+            
+            <button onclick="calculateArtillery()">Calculate & Graph</button>
+
+            <!-- Results Panel -->
             <div class="results" id="outputArea">
-                <strong>Results will appear here</strong>
+                <strong>Enter values and click calculate.</strong>
             </div>
         </div>
 
-        <!-- Right Side: Graph Display -->
+        <!-- Right Content Window: The Graph Canvas -->
         <div class="main-content">
             <h2>Trajectory Visualizer</h2>
             <canvas id="trajectoryChart" width="400" height="250"></canvas>
@@ -132,62 +146,76 @@
     <script>
         let chartInstance = null;
 
-        function roundToHalf(num) {
-            return Math.round(num * 2) / 2;
-        }
+        function calculateArtillery() {
+            // Read Inputs
+            const h = parseFloat(document.getElementById('inputH').value);
+            const a = parseFloat(document.getElementById('inputA').value);
+            const t = parseFloat(document.getElementById('inputT').value);
+            const b = parseFloat(document.getElementById('inputB').value);
+            const l = parseFloat(document.getElementById('inputL').value);
 
-        function calculateTrajectory() {
-            // Retrieve values
-            const bArt = parseFloat(document.getElementById('bearingArtillery').value);
-            const dArt = parseFloat(document.getElementById('distanceArtillery').value);
-            const bTgt = parseFloat(document.getElementById('bearingTarget').value);
-            const dTgt = parseFloat(document.getElementById('distanceTarget').value);
-
-            // Validation checks for empty fields
-            if (isNaN(bArt) || isNaN(dArt) || isNaN(bTgt) || isNaN(dTgt)) {
-                alert("Please fill out all spotter calculation fields.");
+            // Validation
+            if (isNaN(h) || isNaN(a) || isNaN(t) || isNaN(b) || isNaN(l)) {
+                alert("Please fill out all calculation fields.");
                 return;
             }
 
-            // Strict range validation enforcement
-            if (bArt < 0 || bArt > 360 || bTgt < 0 || bTgt > 360) {
-                alert("Bearings must be strictly between 0 and 360 degrees.");
-                return;
-            }
+            // Constants from your setup
+            const g = 178.36;
+            const v0 = 1250;
 
-            if (dArt < 0 || dArt > 7000 || dTgt < 0 || dTgt > 7000) {
-                alert("Distances must be strictly between 0 and 7000 units.");
-                return;
-            }
+            // 1. Calculate intermediate angle p = |h - t|
+            const pDeg = Math.abs(h - t);
+            const pRad = pDeg * (Math.PI / 180);
 
-            // Math placeholders for the triangulation logic
-            const mockDistance = 1000; 
-            const mockVelocity = 110;  
-            const mockAngleDeg = 45;   
-            const g = 9.8;             
+            // 2. Law of Cosines: c = sqrt(a² + b² - 2ab * cos(p))
+            const c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) - (2 * a * b * Math.cos(pRad)));
 
-            displayGraph(mockDistance, mockVelocity, mockAngleDeg, g);
+            // 3. Firing Angle: q = 0.5 * asin((c * g) / v0²)
+            const asinTerm = (c * g) / Math.pow(v0, 2);
             
+            if (asinTerm > 1 || asinTerm < -1) {
+                document.getElementById('outputArea').innerHTML = `<p style="color:red;"><strong>Error:</strong> Target out of physical range (calculated distance: ${c.toFixed(1)}).</p>`;
+                return;
+            }
+
+            const qRad = 0.5 * Math.asin(asinTerm);
+            const qDeg = qRad * (180 / Math.PI); // Convert back to system degrees
+
+            // 4. Clicks value: round(q * 2)
+            const clicks = Math.round(qDeg * 2);
+
+            // Update UI Sidebar Panel
             document.getElementById('outputArea').innerHTML = `
-                <p><strong>Calculated Distance:</strong> ${roundToHalf(mockDistance)}</p>
-                <p><strong>Required Angle:</strong> ${roundToHalf(mockAngleDeg)}°</p>
+                <p><strong>Distance to Target (c):</strong> ${c.toFixed(2)}</p>
+                <p><strong>Firing Angle (q):</strong> ${qDeg.toFixed(4)}°</p>
+                <div class="important-metric">
+                    <strong>Clicks from 0 degrees:</strong> ${clicks}
+                </div>
             `;
+
+            // Draw Curve
+            displayGraph(c, v0, qDeg, g, l);
         }
 
-        function displayGraph(distance, v0, angleDeg, g) {
+        function displayGraph(distance, v0, angleDeg, g, l) {
             const angleRad = angleDeg * (Math.PI / 180); 
             const points = [];
             
-            for (let x = 0; x <= distance; x += distance / 50) {
-                const y = x * Math.tan(angleRad) - (g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2));
-                if (y >= 0) {
-                    points.push({x: roundToHalf(x), y: roundToHalf(y)});
-                }
+            // Map out trajectory using your formula: y = x*tan(q) - (g*x²)/(2*v0²*cos(q)²) + l
+            const step = distance / 50;
+            for (let x = 0; x <= distance; x += step) {
+                const term1 = x * Math.tan(angleRad);
+                const term2 = (g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2));
+                const y = term1 - term2 + l;
+                
+                points.push({ x: parseFloat(x.toFixed(1)), y: parseFloat(y.toFixed(1)) });
             }
-            points.push({x: distance, y: 0});
+            
+            // Ensure the final coordinate accurately drops to destination point
+            points.push({ x: parseFloat(distance.toFixed(1)), y: l });
 
             const ctx = document.getElementById('trajectoryChart').getContext('2d');
-            
             if (chartInstance) {
                 chartInstance.destroy();
             }
@@ -196,22 +224,27 @@
                 type: 'line',
                 data: {
                     datasets: [{
-                        label: 'Shot Trajectory',
+                        label: 'Artillery Trajectory',
                         data: points,
-                        borderColor: '#007bff',
+                        borderColor: '#5cb85c',
                         borderWidth: 3,
                         fill: false,
-                        tension: 0.4
+                        pointRadius: 1,
+                        tension: 0.2
                     }]
                 },
                 options: {
+                    responsive: true,
                     scales: {
-                        x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Distance' } },
-                        y: { min: 0, title: { display: true, text: 'Height' } }
+                        x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Horizontal Distance' } },
+                        y: { title: { display: true, text: 'Height Profile' } }
                     }
                 }
             });
         }
+
+        // Run calculation once on page load to verify baseline setup matches image (930 distance, 6 clicks)
+        window.onload = calculateArtillery;
     </script>
 </body>
 </html>
