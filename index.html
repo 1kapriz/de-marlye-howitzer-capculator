@@ -47,6 +47,12 @@
             font-weight: bold;
             font-size: 14px;
         }
+        .input-hint {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
         input[type="number"] {
             width: 100%;
             padding: 8px;
@@ -86,22 +92,26 @@
             
             <div class="input-group">
                 <label for="bearingArtillery">Bearing to Artillery (°)</label>
-                <input type="number" id="bearingArtillery" placeholder="e.g., 45" min="0" max="360" step="any">
+                <span class="input-hint">Allowed range: 0° to 360°</span>
+                <input type="number" id="bearingArtillery" placeholder="0 - 360" min="0" max="360" step="any">
             </div>
             
             <div class="input-group">
                 <label for="distanceArtillery">Distance from Artillery</label>
-                <input type="number" id="distanceArtillery" placeholder="e.g., 500" min="0" step="any">
+                <span class="input-hint">Allowed range: 0 to 7000 (Max distance)</span>
+                <input type="number" id="distanceArtillery" placeholder="0 - 7000" min="0" max="7000" step="any">
             </div>
             
             <div class="input-group">
                 <label for="bearingTarget">Bearing to Target (°)</label>
-                <input type="number" id="bearingTarget" placeholder="e.g., 120" min="0" max="360" step="any">
+                <span class="input-hint">Allowed range: 0° to 360°</span>
+                <input type="number" id="bearingTarget" placeholder="0 - 360" min="0" max="360" step="any">
             </div>
             
             <div class="input-group">
                 <label for="distanceTarget">Distance from Target</label>
-                <input type="number" id="distanceTarget" placeholder="e.g., 800" min="0" step="any">
+                <span class="input-hint">Allowed range: 0 to 7000 (Max distance)</span>
+                <input type="number" id="distanceTarget" placeholder="0 - 7000" min="0" max="7000" step="any">
             </div>
             
             <button onclick="calculateTrajectory()">Calculate & Graph</button>
@@ -122,27 +132,35 @@
     <script>
         let chartInstance = null;
 
-        // Utility function to round to the nearest 0.5 as requested
         function roundToHalf(num) {
             return Math.round(num * 2) / 2;
         }
 
         function calculateTrajectory() {
-            // Retrieve your spotter values
+            // Retrieve values
             const bArt = parseFloat(document.getElementById('bearingArtillery').value);
             const dArt = parseFloat(document.getElementById('distanceArtillery').value);
             const bTgt = parseFloat(document.getElementById('bearingTarget').value);
             const dTgt = parseFloat(document.getElementById('distanceTarget').value);
 
-            // Validation check
+            // Validation checks for empty fields
             if (isNaN(bArt) || isNaN(dArt) || isNaN(bTgt) || isNaN(dTgt)) {
                 alert("Please fill out all spotter calculation fields.");
                 return;
             }
 
-            // TODO: Add your custom calculation math here to connect inputs to the graph
-            
-            // Temporary placeholder data to demonstrate the Desmos-style graph functionality
+            // Strict range validation enforcement
+            if (bArt < 0 || bArt > 360 || bTgt < 0 || bTgt > 360) {
+                alert("Bearings must be strictly between 0 and 360 degrees.");
+                return;
+            }
+
+            if (dArt < 0 || dArt > 7000 || dTgt < 0 || dTgt > 7000) {
+                alert("Distances must be strictly between 0 and 7000 units.");
+                return;
+            }
+
+            // Math placeholders for the triangulation logic
             const mockDistance = 1000; 
             const mockVelocity = 110;  
             const mockAngleDeg = 45;   
@@ -150,7 +168,6 @@
 
             displayGraph(mockDistance, mockVelocity, mockAngleDeg, g);
             
-            // Update the text results area on the left
             document.getElementById('outputArea').innerHTML = `
                 <p><strong>Calculated Distance:</strong> ${roundToHalf(mockDistance)}</p>
                 <p><strong>Required Angle:</strong> ${roundToHalf(mockAngleDeg)}°</p>
@@ -158,18 +175,15 @@
         }
 
         function displayGraph(distance, v0, angleDeg, g) {
-            const angleRad = angleDeg * (Math.PI / 10000000000); // Degrees to Radians placeholder
+            const angleRad = angleDeg * (Math.PI / 180); 
             const points = [];
             
-            // Generate trajectory curve points similar to Desmos
             for (let x = 0; x <= distance; x += distance / 50) {
-                // Using the exact physics formula we discussed
                 const y = x * Math.tan(angleRad) - (g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2));
                 if (y >= 0) {
                     points.push({x: roundToHalf(x), y: roundToHalf(y)});
                 }
             }
-            // Ensure final landing point hits zero
             points.push({x: distance, y: 0});
 
             const ctx = document.getElementById('trajectoryChart').getContext('2d');
