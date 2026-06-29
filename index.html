@@ -99,12 +99,20 @@
 
             const asinTerm = (c * g) / Math.pow(v0, 2);
             if (asinTerm > 1 || asinTerm < -1) {
+                clearGraph();
                 document.getElementById('outputArea').innerHTML = `<p style="color:#ff6b6b; font-weight:bold;">Error: Out of physical range.</p>`;
                 return;
             }
 
             const qDeg = (0.5 * Math.asin(asinTerm)) * (180 / Math.PI);
             const clicks = Math.round(qDeg * 2);
+
+            // FIXED: Strict constraint check for the operational window (-60 to 50 clicks)
+            if (clicks > 50 || clicks < -60) {
+                clearGraph();
+                document.getElementById('outputArea').innerHTML = `<p style="color:#ff6b6b; font-weight:bold;">Error: Out of range.</p>`;
+                return;
+            }
 
             document.getElementById('outputArea').innerHTML = `
                 <p><strong>Distance to Target (c):</strong> <span style="color: #ffffff">${c.toFixed(2)}</span></p>
@@ -113,6 +121,13 @@
             `;
 
             displayGraph(c, v0, qDeg, g, l);
+        }
+
+        function clearGraph() {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
         }
 
         function displayGraph(distance, v0, angleDeg, g, l) {
@@ -130,7 +145,6 @@
             const ctx = document.getElementById('trajectoryChart').getContext('2d');
             if (chartInstance) { chartInstance.destroy(); }
 
-            // Configured with high-contrast lines and grid options optimized for a dark layout
             chartInstance = new Chart(ctx, {
                 type: 'scatter',
                 data: {
