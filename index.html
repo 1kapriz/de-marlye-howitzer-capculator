@@ -45,6 +45,6 @@ maxY*=1.15;minY=minY<0?minY*1.15:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.
 for(let i=0;i<=4;i++){const f=i/4,xVal=f*dist,cX=pL+f*pW;cx.beginPath();cx.moveTo(cX,pT);cx.lineTo(cX,pT+pH);cx.stroke();cx.textAlign='center';cx.fillText(Math.round(xVal),cX,pT+pH+18)}
 for(let i=0;i<=4;i++){const f=i/4,yVal=minY+f*(maxY-minY),cY=pT+pH-f*pH;cx.beginPath();cx.moveTo(pL,cY);cx.lineTo(pL+pW,cY);cx.stroke();cx.textAlign='right';cx.fillText(Math.round(yVal),pL-10,cY+4)}
 if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
-cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
+cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);cx.stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
 pts.forEach((pt,idx)=>{const cX=pL+(pt.x/dist)*pW,cY=pT+pH-((pt.y-minY)/(maxY-minY))*pH;if(idx===0)cx.moveTo(cX,cY);else cx.lineTo(cX,cY)});cx.stroke()}window.onload=function(){calculateArtillery()};
 </script></body></html>
