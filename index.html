@@ -33,16 +33,18 @@ const qDeg=(0.5*Math.asin(asinTerm))*(180/Math.PI),clicks=Math.round(qDeg*2);
 if(clicks>50||clicks<-60){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
 const angRad=qDeg*(Math.PI/180);let maxH=l;for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;if(y>maxH)maxH=y}
 const roundMaxH=Math.round(maxH*2)/2;
-document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
+let azi=0;if(c>0.1&&b>0.1){const revH=(h+180)%360;let sinA=(b*Math.sin(pRad))/c;if(sinA>1)sinA=1;if(sinA<-1)sinA=-1;let intA=Math.asin(sinA)*(180/Math.PI);
+const cosCheck=Math.pow(a,2)+Math.pow(c,2)-Math.pow(b,2);if(cosCheck<0)intA=180-intA;let diff=((t-h)%360+540)%360-180;if(diff>0)azi=(revH+intA)%360;else azi=(revH-intA+360)%360}else{azi=(h+180)%360}
+document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Firing Azimuth:</strong> <span style="color:#fff">${azi.toFixed(2)}°</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
 drawNativeGraph(c,v0,qDeg,g,l)}
 function clearCanvas(){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(cx)cx.clearRect(0,0,cv.width,cv.height)}
 function drawNativeGraph(dist,v0,angDeg,g,l){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(!cx)return;cx.clearRect(0,0,cv.width,cv.height);
 const pL=60,pR=30,pT=30,pB=40,pW=cv.width-pL-pR,pH=cv.height-pT-pB,angRad=angDeg*(Math.PI/180),pts=[],seg=100;let maxY=50,minY=0;
-for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;pts.push({x,y});if(y>maxY)maxY=y;if(y*1.15<minY)minY=y*1.15}
-maxY*=1.15;minY=minY<0?minY:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
+for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+l;pts.push({x,y});if(y>maxY)maxY=y;if(y<minY)minY=y}
+maxY*=1.15;minY=minY<0?minY*1.15:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
 for(let i=0;i<=4;i++){const f=i/4,xVal=f*dist,cX=pL+f*pW;cx.beginPath();cx.moveTo(cX,pT);cx.lineTo(cX,pT+pH);cx.stroke();cx.textAlign='center';cx.fillText(Math.round(xVal),cX,pT+pH+18)}
 for(let i=0;i<=4;i++){const f=i/4,yVal=minY+f*(maxY-minY),cY=pT+pH-f*pH;cx.beginPath();cx.moveTo(pL,cY);cx.lineTo(pL+pW,cY);cx.stroke();cx.textAlign='right';cx.fillText(Math.round(yVal),pL-10,cY+4)}
 if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
-cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);cx.stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
+cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
 pts.forEach((pt,idx)=>{const cX=pL+(pt.x/dist)*pW,cY=pT+pH-((pt.y-minY)/(maxY-minY))*pH;if(idx===0)cx.moveTo(cX,cY);else cx.lineTo(cX,cY)});cx.stroke()}window.onload=function(){calculateArtillery()};
 </script></body></html>
