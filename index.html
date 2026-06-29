@@ -6,22 +6,23 @@
     <title>Artillery Spotter Calculator</title>
     <script src="https://jsdelivr.net"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #121214; color: #e0e0e6; }
         .container { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; flex-wrap: wrap; }
-        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .instructions-column { flex: 1; min-width: 280px; border-top: 4px solid #007bff; }
-        .inputs-column { flex: 1.2; min-width: 320px; border-top: 4px solid #6c757d; }
-        .graph-column { flex: 2; min-width: 400px; border-top: 4px solid #28a745; }
-        h2 { margin-top: 0; color: #222; font-size: 20px; }
-        p { font-size: 14px; line-height: 1.5; color: #444; }
+        .panel { background: #1e1e24; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); box-sizing: border-box; }
+        .instructions-column { flex: 1; min-width: 280px; border-top: 4px solid #3792cb; }
+        .inputs-column { flex: 1.2; min-width: 320px; border-top: 4px solid #4e5154; }
+        .graph-column { flex: 2; min-width: 400px; border-top: 4px solid #2da64e; }
+        h2 { margin-top: 0; color: #ffffff; font-size: 20px; }
+        p { font-size: 14px; line-height: 1.5; color: #b0b0b8; }
         .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .input-hint { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
-        input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        .results { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; }
-        .important-metric { font-size: 20px; color: #d9534f; margin-top: 12px; padding-top: 12px; border-top: 2px dashed #bbb; font-weight: bold; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #ffffff; }
+        .input-hint { display: block; font-size: 11px; color: #8a8a93; margin-bottom: 4px; }
+        input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #3a3a42; border-radius: 4px; font-size: 14px; background-color: #2a2a32; color: #ffffff; }
+        input[type="number"]:focus { outline: none; border-color: #3792cb; }
+        button { width: 100%; padding: 12px; background-color: #3792cb; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #2b75a4; }
+        .results { margin-top: 20px; padding: 15px; background-color: #2a2a32; border-radius: 4px; border: 1px solid #3a3a42; }
+        .important-metric { font-size: 20px; color: #ff6b6b; margin-top: 12px; padding-top: 12px; border-top: 2px dashed #4a4a52; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -69,7 +70,7 @@
         <!-- COLUMN 3: Chart Display -->
         <div class="panel graph-column">
             <h2>Trajectory Visualizer</h2>
-            <div style="height: 300px; position: relative;">
+            <div style="height: 350px; position: relative;">
                 <canvas id="trajectoryChart"></canvas>
             </div>
         </div>
@@ -93,14 +94,12 @@
             const g = 178.36;
             const v0 = 1250;
 
-            // Law of Cosines calculation
             const pRad = Math.abs(h - t) * (Math.PI / 180);
             const c = Math.sqrt(Math.pow(a,2) + Math.pow(b,2) - (2 * a * b * Math.cos(pRad)));
 
-            // Firing angle verification calculation
             const asinTerm = (c * g) / Math.pow(v0, 2);
             if (asinTerm > 1 || asinTerm < -1) {
-                document.getElementById('outputArea').innerHTML = `<p style="color:#d9534f; font-weight:bold;">Error: Out of physical range.</p>`;
+                document.getElementById('outputArea').innerHTML = `<p style="color:#ff6b6b; font-weight:bold;">Error: Out of physical range.</p>`;
                 return;
             }
 
@@ -108,8 +107,8 @@
             const clicks = Math.round(qDeg * 2);
 
             document.getElementById('outputArea').innerHTML = `
-                <p><strong>Distance to Target (c):</strong> ${c.toFixed(2)}</p>
-                <p><strong>Firing Angle (q):</strong> ${qDeg.toFixed(4)}°</p>
+                <p><strong>Distance to Target (c):</strong> <span style="color: #ffffff">${c.toFixed(2)}</span></p>
+                <p><strong>Firing Angle (q):</strong> <span style="color: #ffffff">${qDeg.toFixed(4)}°</span></p>
                 <div class="important-metric">Clicks from 0 degrees: ${clicks}</div>
             `;
 
@@ -119,36 +118,50 @@
         function displayGraph(distance, v0, angleDeg, g, l) {
             const angleRad = angleDeg * (Math.PI / 180);
             const points = [];
-            const step = distance / 50;
+            const segments = 50;
+            const step = distance / segments;
 
-            for (let x = 0; x <= distance; x += step) {
+            for (let i = 0; i <= segments; i++) {
+                const x = i * step;
                 const y = (x * Math.tan(angleRad)) - ((g * Math.pow(x, 2)) / (2 * Math.pow(v0, 2) * Math.pow(Math.cos(angleRad), 2))) + l;
                 points.push({ x: parseFloat(x.toFixed(1)), y: parseFloat(y.toFixed(1)) });
             }
-            points.push({ x: parseFloat(distance.toFixed(1)), y: l });
 
             const ctx = document.getElementById('trajectoryChart').getContext('2d');
             if (chartInstance) { chartInstance.destroy(); }
 
+            // Configured with high-contrast lines and grid options optimized for a dark layout
             chartInstance = new Chart(ctx, {
-                type: 'line',
+                type: 'scatter',
                 data: {
                     datasets: [{
                         label: 'Artillery Trajectory Arc',
                         data: points,
-                        borderColor: '#28a745',
+                        showLine: true,
+                        borderColor: '#2da64e',
                         borderWidth: 3,
-                        fill: false,
+                        backgroundColor: 'transparent',
                         pointRadius: 0,
-                        tension: 0.1
+                        tension: 0.2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e0e0e6' } }
+                    },
                     scales: {
-                        x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Horizontal Distance' } },
-                        y: { title: { display: true, text: 'Height Profile' } }
+                        x: { 
+                            grid: { color: '#2a2a32' },
+                            ticks: { color: '#8a8a93' },
+                            title: { display: true, text: 'Horizontal Distance', color: '#e0e0e6' } 
+                        },
+                        y: { 
+                            grid: { color: '#2a2a32' },
+                            ticks: { color: '#8a8a93' },
+                            title: { display: true, text: 'Height Profile', color: '#e0e0e6' } 
+                        }
                     }
                 }
             });
