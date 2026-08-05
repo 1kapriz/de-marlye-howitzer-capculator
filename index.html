@@ -23,7 +23,7 @@ canvas{display:block;width:100%;max-width:600px;height:380px;background:#1a1a1f;
 <div class="input-group"><label>Distance from Artillery (a)</label><span class="input-hint">Range: 0 to 7000</span><input type="number" id="inputA" value="930"></div>
 <div class="input-group"><label>Bearing to Target (t)</label><span class="input-hint">Range: 0° to 360°</span><input type="number" id="inputT" value="0"></div>
 <div class="input-group"><label>Distance from Target (b)</label><span class="input-hint">Range: 0 to 7000</span><input type="number" id="inputB" value="0"></div>
-<div class="input-group"><label>Spotter Height Relative to World</label><span class="input-hint">e.g., -250 sets Howitzer origin to 250</span><input type="number" id="inputL" value="-250"></div>
+<div class="input-group"><label>Spotter Height Relative to World</label><span class="input-hint">e.g., Negative if below, positive if above</span><input type="number" id="inputL" value="0"></div>
 <button onclick="calculateArtillery()">Calculate & Graph</button><div class="results" id="outputArea"><strong>Click Calculate to view solutions.</strong></div></div>
 <div class="panel graph-column"><div><h2>Trajectory Visualizer</h2><canvas id="customTrajectoryCanvas" width="600" height="380"></canvas></div>
 <div class="controls-panel"><h2>Controls</h2><div class="controls-grid">
