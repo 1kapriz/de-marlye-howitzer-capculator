@@ -29,12 +29,14 @@ const h=parseFloat(document.getElementById('inputH').value),a=parseFloat(documen
 if(isNaN(h)||isNaN(a)||isNaN(t)||isNaN(b)||isNaN(spotterH)){alert("Please fill fields.");return}
 const g=178.36,v0=1250,hRad=h*(Math.PI/180),tRad=t*(Math.PI/180);
 const ax=a*Math.sin(hRad),ay=a*Math.cos(hRad),bx=b*Math.sin(tRad),by=b*Math.cos(tRad);
-const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy),asinTerm=(c*g)/(v0*v0);
-if(asinTerm>1||asinTerm<-1){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
-const qDeg=(0.5*Math.asin(asinTerm))*(180/Math.PI),clicks=Math.round(qDeg*2);
-if(clicks>50||clicks<-60){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
-const gunOriginY=-spotterH,angRad=qDeg*(Math.PI/180);let maxH=gunOriginY;
-for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+gunOriginY;if(y>maxH)maxH=y}
+const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy);
+const gunOriginY=-spotterH;
+const v2=v0*v0,v4=v2*v2;
+const rootTerm=v4-g*(g*c*c-2*gunOriginY*v2);
+if(rootTerm<0){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
+const qRad=Math.atan((v2-Math.sqrt(rootTerm))/(g*c)),qDeg=qRad*(180/Math.PI),clicks=Math.round(qDeg*2);
+if(clicks>50||clicks<-60||isNaN(clicks)){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
+let maxH=gunOriginY;for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(qRad)-((g*x*x)/(2*v2*Math.cos(qRad)*Math.cos(qRad)))+gunOriginY;if(y>maxH)maxH=y}
 const roundMaxH=Math.round(maxH*2)/2,roundGunOriginY=Math.round(gunOriginY*2)/2;
 let azi=(Math.atan2(dx,dy)*(180/Math.PI)+360)%360;
 document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Firing Azimuth:</strong> <span style="color:#fff">${azi.toFixed(2)}°</span></p><p><strong>Howitzer Firing Height:</strong> <span style="color:#fff">${roundGunOriginY}</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
