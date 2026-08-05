@@ -4,7 +4,7 @@ body{font-family:Arial,sans-serif;margin:20px;background-image:url('https://tran
 .panel{background:rgba(30,30,36,0.85);padding:20px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.4);box-sizing:border-box;backdrop-filter:blur(5px)}
 .instructions-column{flex:1;min-width:280px;border-top:4px solid #3792cb}
 .inputs-column{flex:1.2;min-width:320px;border-top:4px solid #4e5154}
-.graph-column{flex:2;min-width:400px;border-top:4px solid #2da64e}
+.graph-column{flex:2;min-width:400px;border-top:4px solid #2da64e;display:flex;flex-direction:column;gap:20px}
 h2{margin-top:0;color:#fff;font-size:20px}p{font-size:14px;line-height:1.5;color:#b0b0b8}
 .input-group{margin-bottom:15px}label{display:block;margin-bottom:5px;font-weight:bold;font-size:14px;color:#fff}
 .input-hint{display:block;font-size:11px;color:#8a8a93;margin-bottom:4px}
@@ -13,6 +13,9 @@ button{width:100%;padding:12px;background-color:#3792cb;color:#fff;border:none;b
 .results{margin-top:20px;padding:15px;background-color:#2a2a32;border-radius:4px;border:1px solid #3a3a42}
 .important-metric{font-size:20px;color:#ff6b6b;margin-top:12px;padding-top:12px;border-top:2px dashed #4a4a52;font-weight:bold}
 canvas{display:block;width:100%;max-width:600px;height:380px;background:#1a1a1f;border-radius:4px;border:1px solid #2a2a32;margin-top:10px}
+.controls-panel{background:rgba(42,42,50,0.9);border-left:4px solid #ff9f43;padding:15px;border-radius:6px}
+.controls-grid{display:grid;grid-template-columns:auto 1fr;gap:10px;margin-top:10px}
+.key-badge{background:#3a3a42;color:#fff;padding:2px 8px;border-radius:4px;font-family:monospace;font-weight:bold;text-align:center;border-bottom:2px solid #222}
 </style></head><body><div class="container">
 <div class="panel instructions-column"><h2>Instructions</h2><p>The intention is to have a spotter at a set location on the field. They should measure the distance it is from them to the artillery with a rangefind tool/binocs, then take the bearing of the artillery direction, and plug it in. Then, they should take the same measurements but to the desired target. The Spotter Height reflects your elevation relative to the field. All measurements are in studs. Clicks from 0 degrees is how many times you press W to elevate it from flat.</p></div>
 <div class="panel inputs-column"><h2>Spotter calculations</h2>
@@ -22,23 +25,24 @@ canvas{display:block;width:100%;max-width:600px;height:380px;background:#1a1a1f;
 <div class="input-group"><label>Distance from Target (b)</label><span class="input-hint">Range: 0 to 7000</span><input type="number" id="inputB" value="0"></div>
 <div class="input-group"><label>Spotter Height Relative to World</label><span class="input-hint">e.g., -250 sets Howitzer origin to 250</span><input type="number" id="inputL" value="-250"></div>
 <button onclick="calculateArtillery()">Calculate & Graph</button><div class="results" id="outputArea"><strong>Click Calculate to view solutions.</strong></div></div>
-<div class="panel graph-column"><h2>Trajectory Visualizer</h2><canvas id="customTrajectoryCanvas" width="600" height="380"></canvas></div></div>
+<div class="panel graph-column"><div><h2>Trajectory Visualizer</h2><canvas id="customTrajectoryCanvas" width="600" height="380"></canvas></div>
+<div class="controls-panel"><h2>Controls</h2><div class="controls-grid">
+<div><span class="key-badge">W</span> <span class="key-badge">A</span> <span class="key-badge">S</span> <span class="key-badge">D</span></div><div>Tap WASD to pitch/yaw</div>
+<div><span class="key-badge">T</span></div><div>Press T to reset to 0 degrees</div>
+<div><span class="key-badge">Y</span></div><div>Press Y to read out degrees</div>
+</div></div></div></div>
 <script>
 function calculateArtillery(){
 const h=parseFloat(document.getElementById('inputH').value),a=parseFloat(document.getElementById('inputA').value),t=parseFloat(document.getElementById('inputT').value),b=parseFloat(document.getElementById('inputB').value),spotterH=parseFloat(document.getElementById('inputL').value);
 if(isNaN(h)||isNaN(a)||isNaN(t)||isNaN(b)||isNaN(spotterH)){alert("Please fill fields.");return}
 const g=178.36,v0=1250,hRad=h*(Math.PI/180),tRad=t*(Math.PI/180);
 const ax=a*Math.sin(hRad),ay=a*Math.cos(hRad),bx=b*Math.sin(tRad),by=b*Math.cos(tRad);
-const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy);
-const gunOriginY=-spotterH;
-const v2=v0*v0,v4=v2*v2;
-const rootTerm=v4-g*(g*c*c-2*gunOriginY*v2);
+const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy);const gunOriginY=-spotterH;const v2=v0*v0,v4=v2*v2;const rootTerm=v4-g*(g*c*c-2*gunOriginY*v2);
 if(rootTerm<0){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
 const qRad=Math.atan((v2-Math.sqrt(rootTerm))/(g*c)),qDeg=qRad*(180/Math.PI),clicks=Math.round(qDeg*2);
 if(clicks>50||clicks<-60||isNaN(clicks)){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
 let maxH=gunOriginY;for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(qRad)-((g*x*x)/(2*v2*Math.cos(qRad)*Math.cos(qRad)))+gunOriginY;if(y>maxH)maxH=y}
-const roundMaxH=Math.round(maxH*2)/2,roundGunOriginY=Math.round(gunOriginY*2)/2;
-let azi=(Math.atan2(dx,dy)*(180/Math.PI)+360)%360;
+const roundMaxH=Math.round(maxH*2)/2,roundGunOriginY=Math.round(gunOriginY*2)/2;let azi=(Math.atan2(dx,dy)*(180/Math.PI)+360)%360;
 document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Firing Azimuth:</strong> <span style="color:#fff">${azi.toFixed(2)}°</span></p><p><strong>Howitzer Firing Height:</strong> <span style="color:#fff">${roundGunOriginY}</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
 drawNativeGraph(c,v0,qDeg,g,gunOriginY)}
 function clearCanvas(){const cv=document.getElementById('customTrajectoryCanvas'),cx=cv.getContext('2d');if(cx)cx.clearRect(0,0,cv.width,cv.height)}
@@ -48,7 +52,7 @@ for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0
 maxY*=1.15;minY=minY<0?minY*1.15:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
 for(let i=0;i<=4;i++){const f=i/4,xVal=f*dist,cX=pL+f*pW;cx.beginPath();cx.moveTo(cX,pT);cx.lineTo(cX,pT+pH);cx.stroke();cx.textAlign='center';cx.fillText(Math.round(xVal),cX,pT+pH+18)}
 for(let i=0;i<=4;i++){const f=i/4,yVal=minY+f*(maxY-minY),cY=pT+pH-f*pH;cx.beginPath();cx.moveTo(pL,cY);cx.lineTo(pL+pW,cY);cx.stroke();cx.textAlign='right';cx.fillText(Math.round(yVal),pL-10,cY+4)}
-if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
+if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash();cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
 cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);cx.stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
 pts.forEach((pt,idx)=>{const cX=pL+(pt.x/dist)*pW,cY=pT+pH-((pt.y-minY)/(maxY-minY))*pH;if(idx===0)cx.moveTo(cX,cY);else cx.lineTo(cX,cY)});cx.stroke()}window.onload=function(){calculateArtillery()};
 </script></body></html>
