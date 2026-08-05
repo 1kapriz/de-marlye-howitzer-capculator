@@ -23,7 +23,7 @@ canvas{display:block;width:100%;max-width:600px;height:380px;background:#1a1a1f;
 <div class="input-group"><label>Distance from Artillery (a)</label><span class="input-hint">Range: 0 to 7000</span><input type="number" id="inputA" value="930"></div>
 <div class="input-group"><label>Bearing to Target (t)</label><span class="input-hint">Range: 0° to 360°</span><input type="number" id="inputT" value="0"></div>
 <div class="input-group"><label>Distance from Target (b)</label><span class="input-hint">Range: 0 to 7000</span><input type="number" id="inputB" value="0"></div>
-<div class="input-group"><label>Spotter Height Relative to World</label><span class="input-hint">e.g., Negative if below, positive if above</span><input type="number" id="inputL" value="0"></div>
+<div class="input-group"><label>Spotter Height Relative to World</label><span class="input-hint">e.g., -250 sets Howitzer origin to 250</span><input type="number" id="inputL" value="-250"></div>
 <button onclick="calculateArtillery()">Calculate & Graph</button><div class="results" id="outputArea"><strong>Click Calculate to view solutions.</strong></div></div>
 <div class="panel graph-column"><div><h2>Trajectory Visualizer</h2><canvas id="customTrajectoryCanvas" width="600" height="380"></canvas></div>
 <div class="controls-panel"><h2>Controls</h2><div class="controls-grid">
@@ -37,11 +37,12 @@ const h=parseFloat(document.getElementById('inputH').value),a=parseFloat(documen
 if(isNaN(h)||isNaN(a)||isNaN(t)||isNaN(b)||isNaN(spotterH)){alert("Please fill fields.");return}
 const g=178.36,v0=1250,hRad=h*(Math.PI/180),tRad=t*(Math.PI/180);
 const ax=a*Math.sin(hRad),ay=a*Math.cos(hRad),bx=b*Math.sin(tRad),by=b*Math.cos(tRad);
-const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy);const gunOriginY=-spotterH;const v2=v0*v0,v4=v2*v2;const rootTerm=v4-g*(g*c*c-2*gunOriginY*v2);
-if(rootTerm<0){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
-const qRad=Math.atan((v2-Math.sqrt(rootTerm))/(g*c)),qDeg=qRad*(180/Math.PI),clicks=Math.round(qDeg*2);
+const dx=bx-ax,dy=by-ay,c=Math.sqrt(dx*dx+dy*dy),asinTerm=(c*g)/(v0*v0);
+if(asinTerm>1||asinTerm<-1){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of physical range.</p>`;return}
+const qDeg=(0.5*Math.asin(asinTerm))*(180/Math.PI),clicks=Math.round(qDeg*2);
 if(clicks>50||clicks<-60||isNaN(clicks)){clearCanvas();document.getElementById('outputArea').innerHTML=`<p style="color:#ff6b6b;font-weight:bold">Error: Out of range.</p>`;return}
-let maxH=gunOriginY;for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(qRad)-((g*x*x)/(2*v2*Math.cos(qRad)*Math.cos(qRad)))+gunOriginY;if(y>maxH)maxH=y}
+const gunOriginY=-spotterH,angRad=qDeg*(Math.PI/180);let maxH=gunOriginY;
+for(let i=0;i<=100;i++){const x=(i/100)*c,y=x*Math.tan(angRad)-((g*x*x)/(2*v0*v0*Math.cos(angRad)*Math.cos(angRad)))+gunOriginY;if(y>maxH)maxH=y}
 const roundMaxH=Math.round(maxH*2)/2,roundGunOriginY=Math.round(gunOriginY*2)/2;let azi=(Math.atan2(dx,dy)*(180/Math.PI)+360)%360;
 document.getElementById('outputArea').innerHTML=`<p><strong>Distance to Target (c):</strong> <span style="color:#fff">${c.toFixed(2)}</span></p><p><strong>Firing Angle (q):</strong> <span style="color:#fff">${qDeg.toFixed(4)}°</span></p><p><strong>Firing Azimuth:</strong> <span style="color:#fff">${azi.toFixed(2)}°</span></p><p><strong>Howitzer Firing Height:</strong> <span style="color:#fff">${roundGunOriginY}</span></p><p><strong>Max Height:</strong> <span style="color:#fff">${roundMaxH}</span></p><div class="important-metric">Clicks from 0 degrees: ${clicks}</div>`;
 drawNativeGraph(c,v0,qDeg,g,gunOriginY)}
@@ -52,7 +53,7 @@ for(let i=0;i<=seg;i++){const x=(i/seg)*dist,y=x*Math.tan(angRad)-((g*x*x)/(2*v0
 maxY*=1.15;minY=minY<0?minY*1.15:-10;cx.strokeStyle='#2a2a32';cx.lineWidth=1;cx.fillStyle='#8a8a93';cx.font='11px Arial';
 for(let i=0;i<=4;i++){const f=i/4,xVal=f*dist,cX=pL+f*pW;cx.beginPath();cx.moveTo(cX,pT);cx.lineTo(cX,pT+pH);cx.stroke();cx.textAlign='center';cx.fillText(Math.round(xVal),cX,pT+pH+18)}
 for(let i=0;i<=4;i++){const f=i/4,yVal=minY+f*(maxY-minY),cY=pT+pH-f*pH;cx.beginPath();cx.moveTo(pL,cY);cx.lineTo(pL+pW,cY);cx.stroke();cx.textAlign='right';cx.fillText(Math.round(yVal),pL-10,cY+4)}
-if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash();cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
+if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyle='#ff6b6b';cx.lineWidth=1.5;cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(pL,zeroY);cx.lineTo(pL+pW,zeroY);cx.stroke();cx.setLineDash([])}
 cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);cx.stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
 pts.forEach((pt,idx)=>{const cX=pL+(pt.x/dist)*pW,cY=pT+pH-((pt.y-minY)/(maxY-minY))*pH;if(idx===0)cx.moveTo(cX,cY);else cx.lineTo(cX,cY)});cx.stroke()}window.onload=function(){calculateArtillery()};
 </script></body></html>
