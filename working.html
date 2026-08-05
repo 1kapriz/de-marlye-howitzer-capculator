@@ -52,3 +52,5 @@ if(0>=minY&&0<=maxY){const zeroY=pT+pH-(((0-minY)/(maxY-minY))*pH);cx.strokeStyl
 cx.strokeStyle='#4a4a52';cx.lineWidth=2;cx.beginPath();cx.moveTo(pL,pT);cx.lineTo(pL,pT+pH);cx.lineTo(pL+pW,pT+pH);cx.stroke();cx.strokeStyle='#2da64e';cx.lineWidth=3;cx.beginPath();
 pts.forEach((pt,idx)=>{const cX=pL+(pt.x/dist)*pW,cY=pT+pH-((pt.y-minY)/(maxY-minY))*pH;if(idx===0)cx.moveTo(cX,cY);else cx.lineTo(cX,cY)});cx.stroke()}window.onload=function(){calculateArtillery()};
 </script></body></html>
+
+
